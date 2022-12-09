@@ -1,13 +1,14 @@
 public class Door {
 
     private boolean isLocked;
-    private int id;
+    private final int id;
     // A Door always connects 2 rooms.
     private Room r1;
     private Room r2;
 
     public Door(int id, boolean isLocked) {
         this.id = id;
+        this.isLocked = isLocked;
     }
 
     public Door(int id, Room r1, Room r2, boolean isLocked) {

@@ -34,7 +34,7 @@ public class WalkThrough {
 
         for(Room r : rooms) {
             System.out.printf("Starting walk in room %s with %d unlocked doors%n", r, r.getUnlockedDoors().size());
-            walk(r, new ArrayList<Door>(), doors.length);
+            walk(r, new ArrayList<>(), doors.length);
         }
     }
 

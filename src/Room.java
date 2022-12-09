@@ -3,7 +3,7 @@ import java.util.List;
 
 public class Room {
     private List<Door> doors;
-    private String name;
+    private final String name;
 
     public Room(String name) {
         doors = new ArrayList<>();
