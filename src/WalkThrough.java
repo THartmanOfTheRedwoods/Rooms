@@ -2,35 +2,35 @@ import java.util.ArrayList;
 
 public class WalkThrough {
     public static void main(String[] args) {
-        Room outside = new Room("Outside");
-        Room r1 = new Room("One");
-        Room r2 = new Room("Two");
-        Room r3 = new Room("Three");
-        Room r4 = new Room("Four");
-        Room r5 = new Room("Five");
-        Room[] rooms = {outside, r1, r2, r3, r4, r5};
+        ArrayList<Room> rooms = new ArrayList<>();
+        rooms.add(new Room("Outside"));
+        rooms.add(new Room("One"));
+        rooms.add(new Room("Two"));
+        rooms.add(new Room("Three"));
+        rooms.add(new Room("Four"));
+        rooms.add(new Room("Five"));
 
         Door[] doors = new Door[16];
         for(int i=0; i<doors.length; i++) {
             doors[i] = new Door(i+1, false);
         }
 
-        outside.connect(r1, doors[0]);
-        outside.connect(r2, doors[1]);
-        outside.connect(r1, doors[2]);
-        r1.connect(r2, doors[3]);
-        outside.connect(r2, doors[4]);
-        r1.connect(r3, doors[5]);
-        r1.connect(r4, doors[6]);
-        r2.connect(r4, doors[7]);
-        r2.connect(r5, doors[8]);
-        outside.connect(r3, doors[9]);
-        r3.connect(r4, doors[10]);
-        r4.connect(r5, doors[11]);
-        outside.connect(r5, doors[12]);
-        outside.connect(r3, doors[13]);
-        outside.connect(r4, doors[14]);
-        outside.connect(r5, doors[15]);
+        rooms.get(0).connect(rooms.get(1), doors[0]);
+        rooms.get(0).connect(rooms.get(2), doors[1]);
+        rooms.get(0).connect(rooms.get(1), doors[2]);
+        rooms.get(1).connect(rooms.get(2), doors[3]);
+        rooms.get(0).connect(rooms.get(2), doors[4]);
+        rooms.get(1).connect(rooms.get(3), doors[5]);
+        rooms.get(1).connect(rooms.get(4), doors[6]);
+        rooms.get(2).connect(rooms.get(4), doors[7]);
+        rooms.get(2).connect(rooms.get(5), doors[8]);
+        rooms.get(0).connect(rooms.get(3), doors[9]);
+        rooms.get(3).connect(rooms.get(4), doors[10]);
+        rooms.get(4).connect(rooms.get(5), doors[11]);
+        rooms.get(0).connect(rooms.get(5), doors[12]);
+        rooms.get(0).connect(rooms.get(3), doors[13]);
+        rooms.get(0).connect(rooms.get(4), doors[14]);
+        rooms.get(0).connect(rooms.get(5), doors[15]);
 
         for(Room r : rooms) {
             System.out.printf("Starting walk in room %s with %d unlocked doors%n", r, r.getUnlockedDoors().size());
