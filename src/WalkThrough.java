@@ -1,40 +1,66 @@
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 public class WalkThrough {
     public static void main(String[] args) {
-        Room outside = new Room("Outside");
-        Room r1 = new Room("One");
-        Room r2 = new Room("Two");
-        Room r3 = new Room("Three");
-        Room r4 = new Room("Four");
-        Room r5 = new Room("Five");
-        Room[] rooms = {outside, r1, r2, r3, r4, r5};
+        Room[] rooms;
+        try {
+            InputStream is = WalkThrough.class.getClassLoader().getResourceAsStream("Rooms.xml");
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(false);
+            Document doc = dbf.newDocumentBuilder().parse(is);
 
-        Door[] doors = new Door[16];
-        for(int i=0; i<doors.length; i++) {
-            doors[i] = new Door(i+1, false);
-        }
+            XPathFactory xf = XPathFactory.newInstance();
+            XPath xPath = xf.newXPath();
 
-        outside.connect(r1, doors[0]);
-        outside.connect(r2, doors[1]);
-        outside.connect(r1, doors[2]);
-        r1.connect(r2, doors[3]);
-        outside.connect(r2, doors[4]);
-        r1.connect(r3, doors[5]);
-        r1.connect(r4, doors[6]);
-        r2.connect(r4, doors[7]);
-        r2.connect(r5, doors[8]);
-        outside.connect(r3, doors[9]);
-        r3.connect(r4, doors[10]);
-        r4.connect(r5, doors[11]);
-        outside.connect(r5, doors[12]);
-        outside.connect(r3, doors[13]);
-        outside.connect(r4, doors[14]);
-        outside.connect(r5, doors[15]);
+            // Find Room anywhere within the document...
+            XPathExpression xExp = xPath.compile("//room");
+            NodeList nl = (NodeList) xExp.evaluate(doc, XPathConstants.NODESET);
 
-        for(Room r : rooms) {
-            System.out.printf("Starting walk in room %s with %d unlocked doors%n", r, r.getUnlockedDoors().size());
-            walk(r, new ArrayList<>(), doors.length);
+            rooms = new Room[nl.getLength()];
+            int totalDoors = 0;
+            for (int ri = 0; ri < nl.getLength(); ri++) {
+                Node node = nl.item(ri);
+                NamedNodeMap nnm = node.getAttributes();
+                int ridx =Integer.parseInt(nnm.getNamedItem("id").getTextContent());
+
+                System.out.printf("room %d name %s%n", ridx, nnm.getNamedItem("name").getTextContent());
+
+                rooms[ridx] = new Room(nnm.getNamedItem("name").getTextContent());
+                NodeList doorNodes = node.getChildNodes();
+                for (int di = 0; di < doorNodes.getLength(); di++) {
+                    Node doorNode = doorNodes.item(di);
+                    NamedNodeMap dnnm = doorNode.getAttributes();
+                    if(dnnm != null) { // Not yet sure why we sometimes get a null here.
+                        int doorId = Integer.parseInt(dnnm.getNamedItem("id").getTextContent());
+                        int connectIdx = Integer.parseInt(dnnm.getNamedItem("connects").getTextContent());
+
+                        System.out.printf("  door %d leads to room %s%n", doorId, rooms[connectIdx].toString());
+
+                        Door d = new Door(doorId, false);
+                        totalDoors++;
+                        rooms[ridx].connect(rooms[connectIdx], d);
+                    }
+                }
+            }
+
+            for(Room r : rooms) {
+                System.out.printf("Starting walk in room %s with %d unlocked doors%n", r, r.getUnlockedDoors().size());
+                walk(r, new ArrayList<>(), totalDoors);
+            }
+
+        } catch (ParserConfigurationException | SAXException | IOException | XPathExpressionException exp) {
+            exp.printStackTrace();
         }
     }
 
