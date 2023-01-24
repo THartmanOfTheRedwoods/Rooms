@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 public class WalkThrough {
     public static void main(String[] args) {
-        Room[] rooms;
+        ArrayList<Room> rooms = new ArrayList<>();
         try {
             InputStream is = WalkThrough.class.getClassLoader().getResourceAsStream("Rooms.xml");
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -27,7 +27,6 @@ public class WalkThrough {
             XPathExpression xExp = xPath.compile("//room");
             NodeList nl = (NodeList) xExp.evaluate(doc, XPathConstants.NODESET);
 
-            rooms = new Room[nl.getLength()];
             int totalDoors = 0;
             for (int ri = 0; ri < nl.getLength(); ri++) {
                 Node node = nl.item(ri);
@@ -36,7 +35,7 @@ public class WalkThrough {
 
                 System.out.printf("room %d name %s%n", ridx, nnm.getNamedItem("name").getTextContent());
 
-                rooms[ridx] = new Room(nnm.getNamedItem("name").getTextContent());
+                rooms.add(ridx, new Room(nnm.getNamedItem("name").getTextContent()));
                 NodeList doorNodes = node.getChildNodes();
                 for (int di = 0; di < doorNodes.getLength(); di++) {
                     Node doorNode = doorNodes.item(di);
@@ -45,11 +44,11 @@ public class WalkThrough {
                         int doorId = Integer.parseInt(dnnm.getNamedItem("id").getTextContent());
                         int connectIdx = Integer.parseInt(dnnm.getNamedItem("connects").getTextContent());
 
-                        System.out.printf("  door %d leads to room %s%n", doorId, rooms[connectIdx].toString());
+                        System.out.printf("  door %d leads to room %s%n", doorId, rooms.get(connectIdx).toString());
 
                         Door d = new Door(doorId, false);
                         totalDoors++;
-                        rooms[ridx].connect(rooms[connectIdx], d);
+                        rooms.get(ridx).connect(rooms.get(connectIdx), d);
                     }
                 }
             }
