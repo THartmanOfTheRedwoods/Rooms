@@ -1,40 +1,66 @@
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 public class WalkThrough {
     public static void main(String[] args) {
-        ArrayList<Room> rooms = new ArrayList<>();
-        rooms.add(new Room("Outside"));
-        rooms.add(new Room("One"));
-        rooms.add(new Room("Two"));
-        rooms.add(new Room("Three"));
-        rooms.add(new Room("Four"));
-        rooms.add(new Room("Five"));
+        Room[] rooms;
+        try {
+            InputStream is = WalkThrough.class.getClassLoader().getResourceAsStream("Rooms.xml");
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(false);
+            Document doc = dbf.newDocumentBuilder().parse(is);
 
-        Door[] doors = new Door[16];
-        for(int i=0; i<doors.length; i++) {
-            doors[i] = new Door(i+1, false);
-        }
+            XPathFactory xf = XPathFactory.newInstance();
+            XPath xPath = xf.newXPath();
 
-        rooms.get(0).connect(rooms.get(1), doors[0]);
-        rooms.get(0).connect(rooms.get(2), doors[1]);
-        rooms.get(0).connect(rooms.get(1), doors[2]);
-        rooms.get(1).connect(rooms.get(2), doors[3]);
-        rooms.get(0).connect(rooms.get(2), doors[4]);
-        rooms.get(1).connect(rooms.get(3), doors[5]);
-        rooms.get(1).connect(rooms.get(4), doors[6]);
-        rooms.get(2).connect(rooms.get(4), doors[7]);
-        rooms.get(2).connect(rooms.get(5), doors[8]);
-        rooms.get(0).connect(rooms.get(3), doors[9]);
-        rooms.get(3).connect(rooms.get(4), doors[10]);
-        rooms.get(4).connect(rooms.get(5), doors[11]);
-        rooms.get(0).connect(rooms.get(5), doors[12]);
-        rooms.get(0).connect(rooms.get(3), doors[13]);
-        rooms.get(0).connect(rooms.get(4), doors[14]);
-        rooms.get(0).connect(rooms.get(5), doors[15]);
+            // Find Room anywhere within the document...
+            XPathExpression xExp = xPath.compile("//room");
+            NodeList nl = (NodeList) xExp.evaluate(doc, XPathConstants.NODESET);
 
-        for(Room r : rooms) {
-            System.out.printf("Starting walk in room %s with %d unlocked doors%n", r, r.getUnlockedDoors().size());
-            walk(r, new ArrayList<>(), doors.length);
+            rooms = new Room[nl.getLength()];
+            int totalDoors = 0;
+            for (int ri = 0; ri < nl.getLength(); ri++) {
+                Node node = nl.item(ri);
+                NamedNodeMap nnm = node.getAttributes();
+                int ridx =Integer.parseInt(nnm.getNamedItem("id").getTextContent());
+
+                System.out.printf("room %d name %s%n", ridx, nnm.getNamedItem("name").getTextContent());
+
+                rooms[ridx] = new Room(nnm.getNamedItem("name").getTextContent());
+                NodeList doorNodes = node.getChildNodes();
+                for (int di = 0; di < doorNodes.getLength(); di++) {
+                    Node doorNode = doorNodes.item(di);
+                    NamedNodeMap dnnm = doorNode.getAttributes();
+                    if(dnnm != null) { // Not yet sure why we sometimes get a null here.
+                        int doorId = Integer.parseInt(dnnm.getNamedItem("id").getTextContent());
+                        int connectIdx = Integer.parseInt(dnnm.getNamedItem("connects").getTextContent());
+
+                        System.out.printf("  door %d leads to room %s%n", doorId, rooms[connectIdx].toString());
+
+                        Door d = new Door(doorId, false);
+                        totalDoors++;
+                        rooms[ridx].connect(rooms[connectIdx], d);
+                    }
+                }
+            }
+
+            for(Room r : rooms) {
+                System.out.printf("Starting walk in room %s with %d unlocked doors%n", r, r.getUnlockedDoors().size());
+                walk(r, new ArrayList<>(), totalDoors);
+            }
+
+        } catch (ParserConfigurationException | SAXException | IOException | XPathExpressionException exp) {
+            exp.printStackTrace();
         }
     }
 

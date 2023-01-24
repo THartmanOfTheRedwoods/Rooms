@@ -1,0 +1,29 @@
+<rooms>
+    <room id="0" name="Outside"></room>
+    <room id="1" name="One">
+        <door id="0" connects="0"></door>
+        <door id="2" connects="0"></door>
+    </room>
+    <room id="2" name="Two">
+        <door id="1" connects="0"></door>
+        <door id="4" connects="0"></door>
+        <door id="3" connects="1"></door>
+    </room>
+    <room id="3" name="Three">
+        <door id="9" connects="0"></door>
+        <door id="13" connects="0"></door>
+        <door id="5" connects="1"></door>
+    </room>
+    <room id="4" name="Four">
+        <door id="14" connects="0"></door>
+        <door id="6" connects="1"></door>
+        <door id="7" connects="2"></door>
+        <door id="10" connects="3"></door>
+    </room>
+    <room id="5" name="Five">
+        <door id="12" connects="0"></door>
+        <door id="15" connects="0"></door>
+        <door id="8" connects="2"></door>
+        <door id="11" connects="4"></door>
+    </room>
+</rooms>
